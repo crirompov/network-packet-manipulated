@@ -1,0 +1,52 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+import argparse
+from prettytable import PrettyTable
+from scapy.all import *
+
+def main():
+    #Argumentos:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--synstealth", "-sS", help="Realiza un análisis mediante el envío de la flag SYN activo y analizando las respuestas del objetivo. Por defecto analiza los puertos típicos", action="store_true")
+    parser.add_argument("--ports", "-p", help="Podemos especificar un puerto o un rango de estos para analizar. El rango de puertos tiene que ser especificado de la siguiente manrea [initPort-finPort]")
+    parser.add_argument("--dns", "-d", help="Para comprobar si el objetivo está activo mediante un escaneo hacia el puerto 53 del objetivo", action="store_true")
+    parser.add_argument("--target", "-T")
+    args = parser.parse_args()
+
+    get_arguments(args)
+
+    target = args.target
+    print "targeet => ",target
+    port = args.ports
+    print "port => ", port
+    p = IP(dst=[target])/TCP(dport=80, flags="S")
+    ans, nans= sr(p)
+    get_result_table(ans)
+
+def get_arguments(argsP):
+    target = argsP.target
+
+    print("#######################Argumentos############################")
+    print('Target: ',target)
+    #print('Puertos: ',ports)
+    print("#############################################################")
+
+def get_result_table(server_response):
+    server_response.filter(lambda (s,r):TCP in r and r[TCP].flags&2).make_table(lambda (s,r):(s.dst, s.dport, "X"))
+
+main()
+
+#print "Iniciamos..."
+#p = IP(dst="150.214.142.14")/ICMP()
+#print "tras montar el paquete lo mostramos: "
+#print "p => ",p.show()
+#print "enviamos el paquete..."
+#send(p)
+#print "Paquete enviado"
+
+'''
+    Tener la capacidad de leer parámetros, de montar archivos, de hacer analisis mejores
+    etc.
+
+'''
